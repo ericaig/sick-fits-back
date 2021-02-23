@@ -31,6 +31,12 @@ const { withAuth } = createAuth({
         fields: ['name', 'email', 'password'],
 
         // TODO: add in initial roles here
+    },
+    // by adding `passwordResetLink`, Keystone automatically configures password reset mutations and stuffs...
+    passwordResetLink : {
+        async sendToken(args) {
+            console.log(args);
+        }
     }
 })
 
