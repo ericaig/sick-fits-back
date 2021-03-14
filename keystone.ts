@@ -3,10 +3,13 @@ import { config, createSchema } from '@keystone-next/keystone/schema';
 import { User } from './schemas/User';
 import { Product } from './schemas/Product';
 import { ProductImage } from './schemas/ProductImage';
+import { CartItem } from './schemas/CartItem';
 import { withItemData, statelessSessions } from '@keystone-next/keystone/session'
 import "dotenv/config";
 import { KeystoneContext } from '@keystone-next/types';
 import { insertSeedData } from './seed-data';
+import { sendPasswordResetEmail } from './lib/mail';
+import { extendGraphqlSchema } from './mutations';
 
 /**
  * NOTE: every changes to this file means the server has to be manually restarted to see the new changes... :)
@@ -33,9 +36,9 @@ const { withAuth } = createAuth({
         // TODO: add in initial roles here
     },
     // by adding `passwordResetLink`, Keystone automatically configures password reset mutations and stuffs...
-    passwordResetLink : {
+    passwordResetLink: {
         async sendToken(args) {
-            console.log(args);
+            await sendPasswordResetEmail(args.token, args.identity)
         }
     }
 })
@@ -66,9 +69,10 @@ export default withAuth(
             // schema items goes in here
             User,
             Product,
-            ProductImage
+            ProductImage,
+            CartItem,
         }),
-
+        extendGraphqlSchema: extendGraphqlSchema,
         ui: {
             // Show the UI only for the people that passes this test
             isAccessAllowed: ({ session }) => !!session?.data,
